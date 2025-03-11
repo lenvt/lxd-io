@@ -30,6 +30,10 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 
+[project.urls]
+Homepage = "https://github.com/lenvt/lxd-io"
+Issues = "https://github.com/lenvt/lxd-io/issues"
+
 [project.optional-dependencies]
 dev = [
     "pytest",
@@ -41,8 +45,6 @@ packages = ["lxd_io"]
 
 [tool.setuptools.package-data]
 lxd_io = ["*.json"]
-
-[project.urls]
 
 [project.scripts]
 
