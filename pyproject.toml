@@ -1,0 +1,133 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lxd_io"
+authors = [
+    {name = "Lennart Vater", email = "lennart.vater@rwth-aachen.de"}
+]
+maintainers = [
+    {name = "Lennart Vater", email = "lennart.vater@rwth-aachen.de"}
+]
+description = "Read leveLXData datasets without boilerplate code"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+version = "0.4.0"
+dependencies = [
+    "numpy",
+    "pandas",
+    "loguru",
+    "opencv-python",
+    "matplotlib"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff"
+]
+
+[tool.setuptools]
+packages = ["lxd_io"]
+
+[tool.setuptools.package-data]
+lxd_io = ["*.json"]
+
+[project.urls]
+
+[project.scripts]
+
+
+[tool.ruff]
+exclude = []
+
+[tool.ruff.lint]
+select = [
+    "AIR001",
+    "YTT",
+    "ANN",
+    "ASYNC",
+    "S",
+    "BLE",
+    "B",
+    "A",
+    "COM",
+    "C",
+    "DTZ",
+    "T",
+    "DJ",
+    "EM",
+    "EXE",
+    "FA",
+    "INT",
+    "ISC",
+    "ICN",
+    "LOG",
+    "G",
+    "INP",
+    "PIE",
+    "PYI",
+    "PT",
+    "Q",
+    "RSE",
+    "RET",
+    "SLF",
+    "SIM",
+    "SLOT",
+    "TID",
+    "TCH",
+    "ARG",
+    "PTH",
+    "FLY",
+    "I",
+    "NPY",
+    "N",
+    "PD",
+    "PERF",
+    "E",
+    "W",
+    "F",
+    "PGH",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "UP",
+    "FURB",
+    "RUF",
+    "TRY",
+]
+ignore = [
+    "PLR2004",
+    "PLR0913",
+    "PLR0915",
+    "E501",
+    "B019",
+    "ERA001",  # commented-out-code
+    "D",
+    "I001",
+    "FBT",
+    "RET504",
+    "C901",
+    "SIM108",
+    "TD",  # TODOs
+    "FIX",  # Fixes
+    "TRY002",
+    "TRY003",
+    "Q003",
+    "COM812",
+    "SIM103"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*.py" = ["T201"]
