@@ -4,6 +4,7 @@ import json
 import re
 import pandas as pd
 
+from functools import lru_cache
 from loguru import logger
 from pathlib import Path
 
@@ -64,9 +65,6 @@ class Dataset:
         self._lanelet2_map_files_per_location = {}
         self._opendrive_map_files_per_location = {}
         self._explore_maps_dir()
-
-        # Initialize recordings dict
-        self._recordings = {}
 
     @property
     def id(self) -> str:
@@ -246,6 +244,7 @@ class Dataset:
 
         self._opendrive_map_files_per_location = opendrive_map_files_per_location
 
+    @lru_cache(maxsize=5)
     def get_recording(self, recording_id: str) -> Recording:
 
         logger.debug("Get recording {}.", recording_id)
@@ -254,27 +253,24 @@ class Dataset:
             msg = f"Invalid recording ID. Available recordings are: {self._recording_ids}"
             raise KeyError(msg)
 
-        if recording_id not in self._recordings:
+        recording = Recording(
+            recording_id,
+            self._recording_meta_files[recording_id],
+            self._tracks_meta_files[recording_id],
+            self._tracks_files[recording_id],
+            self._background_image_files[recording_id],
+            self._background_image_scale_factor,
+            f"{self.id}-v{self.version}"
+        )
 
-            recording = Recording(recording_id,
-                                  self._recording_meta_files[recording_id],
-                                  self._tracks_meta_files[recording_id],
-                                  self._tracks_files[recording_id],
-                                  self._background_image_files[recording_id],
-                                  self._background_image_scale_factor,
-                                  f"{self.id}-v{self.version}")
+        location_id = recording.location_id
+        if location_id in self._lanelet2_map_files_per_location:
+            lanelet2_map_file = self._lanelet2_map_files_per_location[location_id]
+            recording.lanelet2_map_file = lanelet2_map_file
+        if location_id in self._opendrive_map_files_per_location:
+            opendrive_map_file = self._opendrive_map_files_per_location[location_id]
+            recording.opendrive_map_file = opendrive_map_file
 
-            location_id = recording.location_id
-            if location_id in self._lanelet2_map_files_per_location:
-                lanelet2_map_file = self._lanelet2_map_files_per_location[location_id]
-                recording.lanelet2_map_file = lanelet2_map_file
-            if location_id in self._opendrive_map_files_per_location:
-                opendrive_map_file = self._opendrive_map_files_per_location[location_id]
-                recording.opendrive_map_file = opendrive_map_file
-
-            self._recordings[recording_id] = recording
-
-        recording = self._recordings[recording_id]
         return recording
 
     def get_track_batches(self, track_batch_size: int, recording_ids: list[int] | None = None) -> list[list[int]]:
