@@ -20,7 +20,8 @@ class Dataset:
 
     def __init__(
             self,
-            dataset_dir: Path, dataset_id: str | None = None,
+            dataset_dir: Path,
+            dataset_id: str | None = None,
             major_version_no: int | None = None,
             minor_version_no: int | None = None,
             background_image_scale_factor: float | None = None
@@ -239,7 +240,13 @@ class Dataset:
             # OR
             # b) Folders with format "X". X=location_id int.
             folder_name = f.parent.name
-            location_id = int(re.match("([0-9]+).*", folder_name).group(1))
+            pattern = "([0-9]+).*"
+            match = re.match(pattern, folder_name)
+            if match:
+                location_id = int(match.group(1))
+            else:
+                logger.warning(f"Folder name {folder_name} does not match the expected pattern: {pattern}. Skip this folder.")
+                continue
             opendrive_map_files_per_location[location_id] = f
 
         self._opendrive_map_files_per_location = opendrive_map_files_per_location
