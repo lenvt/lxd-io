@@ -7,8 +7,8 @@ from lxd_io.track import Track
 
 
 @pytest.fixture
-def valid_track(valid_dataset_with_version_dir: Path) -> Track:
-    return Dataset(valid_dataset_with_version_dir).get_recording(1).get_track(1)
+def valid_track() -> Track:
+    return Dataset("test/data/valid-dataset-v1.5").get_recording(1).get_track(1)
 
 
 def test_track_access_properties(valid_track: Track) -> None:
