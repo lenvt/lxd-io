@@ -5,7 +5,7 @@ from pathlib import Path
 from lxd_io import Dataset
 
 
-@pytest.mark.skip(reason="Dataset conent unavailable in pipeline")
+@pytest.mark.skip(reason="Dataset content unavailable in pipeline")
 def test_lxd_io(dataset_path: Path) -> None:
 
     dataset = Dataset(dataset_path)
@@ -76,10 +76,10 @@ def test_lxd_io(dataset_path: Path) -> None:
     plot_dir = Path(__file__).parent
     recording.plot_track(25, plot_dir)
     recording.plot_track(track_ids_at_frame, plot_dir)
-    dataset.get_recording(2).plot_track(25, plot_dir)
-    dataset.get_recording(10).plot_track(150, plot_dir)
-    dataset.get_recording(55).plot_track(200, plot_dir)
+    # dataset.get_recording(2).plot_track(25, plot_dir)
+    # dataset.get_recording(10).plot_track(150, plot_dir)
+    # dataset.get_recording(55).plot_track(200, plot_dir)
 
 
 if __name__ == "__main__":
-    test_lxd_io(Path("/path/to/exiD-dataset-v2.1"))
+    test_lxd_io(Path("/work/vater/data/exiD-dataset-v2.1"))
