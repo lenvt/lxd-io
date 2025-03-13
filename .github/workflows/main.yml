@@ -46,7 +46,35 @@ jobs:
           htmlcov/
         compression-level: 9
 
-    - name: Lint code with ruff
+  lint-and-format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        # Install a specific version of uv.
+        version: "0.6.6"
+
+    - name: "Set up Python"
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: ".python-version"
+
+    - name: Install the project
+      run: uv sync --all-extras --dev
+
+    - name: Run pre-commit hooks
       run: |
-        uv run ruff check .
-        uv run ruff check --output-format=github .
+        uv run pre-commit run --all-files || (
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Apply Ruff formatting"
+          git push
+        )
