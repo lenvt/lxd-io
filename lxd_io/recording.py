@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -211,7 +211,7 @@ class Recording:
     def get_background_image(self) -> np.ndarray:
 
         if self._background_image is None:
-            self._background_image = cv2.imread(str(self._background_image_file))
+            self._background_image = plt.imread(self._background_image_file)
 
         return self._background_image
 
@@ -235,14 +235,17 @@ class Recording:
         else:
             background_image_trajectory = track.get_background_image_trajectory(self._recording_meta_data["orthoPxToMeter"], self._background_image_scale_factor)
 
-        background_image = self.get_background_image().copy()
+        background_image = self.get_background_image()
+        plot_file = Path(folder) / f"{self._recording_id}_{track_id}.jpg"
 
-        background_image_with_trajectory = cv2.polylines(background_image, [background_image_trajectory.reshape(-1, 1, 2).astype(int)], False, (0, 0, 255), 1)
-
-        folder = Path(folder)
-        plot_file = str(folder / f"{self._recording_id}_{track_id}.jpg")
-
-        cv2.imwrite(plot_file, background_image_with_trajectory)
+        height, width, _ = background_image.shape
+        dpi = 100
+        f, ax = plt.subplots(figsize=(width / dpi, height / dpi), dpi=dpi)
+        ax.imshow(background_image)
+        ax.plot(background_image_trajectory[:, 0], background_image_trajectory[:, 1], color="red", linewidth=1)
+        ax.axis("off")
+        f.savefig(plot_file, bbox_inches="tight", pad_inches=0)
+        plt.close(f)
 
         return plot_file
 
@@ -252,7 +255,13 @@ class Recording:
             # Plot all trajectories in one image
             logger.debug(f"Plot recording {self._recording_id}, tracks {track_ids}")
 
-            background_image = self.get_background_image().copy()
+            background_image = self.get_background_image()
+            plot_file = Path(folder) / f"{self._recording_id}_{len(track_ids)}_tracks.jpg"
+
+            height, width, _ = background_image.shape
+            dpi = 100
+            f, ax = plt.subplots(figsize=(width / dpi, height / dpi), dpi=dpi)
+            ax.imshow(background_image)
 
             for track_id in track_ids:
                 track = self.get_track(track_id)
@@ -262,12 +271,11 @@ class Recording:
                 else:
                     background_image_trajectory = track.get_background_image_trajectory(self._recording_meta_data["orthoPxToMeter"], self._background_image_scale_factor)
 
-                background_image = cv2.polylines(background_image, [background_image_trajectory.reshape(-1, 1, 2).astype(int)], False, (0, 0, 255), 1)
+                    ax.plot(background_image_trajectory[:, 0], background_image_trajectory[:, 1], color="red", linewidth=1)
 
-            folder = Path(folder)
-            plot_file = str(folder / f"{self._recording_id}_{len(track_ids)}_tracks.jpg")
-
-            cv2.imwrite(plot_file, background_image)
+            ax.axis("off")
+            f.savefig(plot_file, bbox_inches="tight", pad_inches=0)
+            plt.close(f)
 
             return plot_file
         else:
