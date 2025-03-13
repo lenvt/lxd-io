@@ -16,11 +16,11 @@ license = {text = "MIT"}
 requires-python = ">=3.8"
 version = "0.4.2"
 dependencies = [
-    "numpy",
-    "pandas",
-    "loguru",
-    "opencv-python",
-    "matplotlib"
+    "loguru>=0.7.3",
+    "matplotlib>=3.7.5",
+    "numpy>=1.24.4",
+    "opencv-python>=4.11.0.86",
+    "pandas>=2.0.3",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -30,24 +30,21 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "ruff>=0.9.10",
+]
+
 [project.urls]
 Homepage = "https://github.com/lenvt/lxd-io"
 Issues = "https://github.com/lenvt/lxd-io/issues"
-
-[project.optional-dependencies]
-dev = [
-    "pytest",
-    "ruff"
-]
 
 [tool.setuptools]
 packages = ["lxd_io"]
 
 [tool.setuptools.package-data]
 lxd_io = ["*.json"]
-
-[project.scripts]
-
 
 [tool.ruff]
 exclude = []
