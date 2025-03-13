@@ -34,18 +34,21 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        uv run pytest --cov=lxd_io --cov-report=xml --cov-report=term-missing test
+        uv run pytest --cov=lxd_io --cov-report=xml --cov-report=term-missing test | tee pytest-coverage.log
 
     - name: Upload coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: coverage.xml
+        compression-level: 9
 
-    - name: Comment coverage on PR
-      uses: orgoro/coverage-comment-action@v1
+    - name: Upload full test output log
+      uses: actions/upload-artifact@v4
       with:
-        coverageFile: coverage.xml
+        name: pytest-log
+        path: pytest-coverage.log
+        compression-level: 9
 
     - name: Lint code with ruff
       run: |
