@@ -48,7 +48,11 @@ class Recording:
         self._track_ids = self._tracks_meta_data[self._track_id_key].tolist()
 
         initial_frame = 0 if not self._is_highd else 1
-        max_frame = int(self._recording_meta_data["duration"] * self._recording_meta_data["frameRate"])
+        try:
+            max_frame = int(self._recording_meta_data["duration"] * self._recording_meta_data["frameRate"])
+        except KeyError as e:
+            msg = f"{recording_id:02d}_recordingMeta.csv data does not contain key {e}"
+            raise KeyError(msg) from e
         self._frames = np.arange(initial_frame, max_frame + 1).tolist()
 
         self._tracks = {}
@@ -219,11 +223,12 @@ class Recording:
 
         if isinstance(track_id, list):
             return self._plot_multiple_tracks(track_id, folder, combine)
-        elif isinstance(track_id, int):
+
+        if isinstance(track_id, int):
             return self._plot_single_track(track_id, folder)
-        else:
-            msg = "track_id must be of type int or list[int]"
-            raise TypeError(msg)
+
+        msg = "track_id must be of type int or list[int]"
+        raise TypeError(msg)
 
     def _plot_single_track(self, track_id: int, folder: Path) -> None:
 
@@ -278,10 +283,6 @@ class Recording:
             plt.close(f)
 
             return plot_file
-        else:
-            # Plot all trajectories in separate images
-            plot_files = []
-            for track_id in track_ids:
-                plot_files.append(self._plot_single_track(track_id, folder))
 
-            return plot_files
+        # Plot all trajectories in separate images
+        return [self._plot_single_track(track_id, folder) for track_id in track_ids]

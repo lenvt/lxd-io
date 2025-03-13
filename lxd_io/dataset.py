@@ -89,21 +89,43 @@ class Dataset:
     def _read_dataset_info_from_folder_name(self) -> None:
         """
         Try to read info from folder name
-        Assumption: Format is "<dataset_id>-dataset-v<major_version_nr>.<minor_version_nr>"
+        Assumption: Format is either
+        "<dataset_id>-dataset-v<major_version_nr>.<minor_version_nr>"
+        or
+        "<dataset_id>-v<major_version_nr>.<minor_version_nr>"
+        or
+        "<dataset_id>-dataset"
+        or
+        "<dataset_id>"
         """
 
-        m = re.match("([a-zA-Z]+)-[a-zA-Z]+-v([0-9]+).([0-9]+)", self._dataset_dir.name)
+        dataset_id = "unknown"
+        major_version_no = 0
+        minor_version_no = 0
+
+        possible_patterns = {
+            "name-dataset-version": "^(.+)-dataset-v([0-9]+).([0-9]+)$",
+            "name-version": "^(.+)-v([0-9]+).([0-9]+)$",
+            "name-dataset": "^(.+)-dataset$"
+        }
+
+        for pattern_name, pattern in possible_patterns.items():  # noqa: B007
+            m = re.match(pattern, self._dataset_dir.name)
+            if m:
+                break
 
         if m is None:
-            logger.warning("Dataset ID and version no was not provided and could not be read from dataset folder. Some features may not work correctly. Please manually provide dataset_id, major_version_no, minor_version_no.")
-            self._dataset_id = "unknown"
-            self._major_version_no = 0
-            self._minor_version_no = 0
-            return
+            dataset_id = self._dataset_dir.name
+        else:
+            if "name" in pattern_name:
+                dataset_id = m.group(1).lower()
+            if "version" in pattern_name:
+                major_version_no = int(m.group(2))
+                minor_version_no = int(m.group(3))
 
-        self._dataset_id = m.group(1).lower()
-        self._major_version_no = int(m.group(2))
-        self._minor_version_no = int(m.group(3))
+        self._dataset_id = dataset_id
+        self._major_version_no = major_version_no
+        self._minor_version_no = minor_version_no
 
     def _load_background_image_scale_factor(self) -> float:
 
@@ -217,11 +239,19 @@ class Dataset:
         lanelet2_map_files_per_location = {}
         for f in potential_lanelet2_maps:
 
+            location_id = None
+
             if f.stem.startswith("location"):
-                location_id = int(re.match("location.*([0-9]+).osm", f.name).group(1))
+                m = re.match("location.*([0-9]+).osm", f.name)
+                if m:
+                    location_id = int(m.group(1))
             else:
-                location_id = int(re.match("([0-9]+).*.osm", f.name).group(1))
-            lanelet2_map_files_per_location[location_id] = f
+                m = re.match("([0-9]+).*.osm", f.name)
+                if m:
+                    location_id = int(m.group(1))
+
+            if location_id is not None:
+                lanelet2_map_files_per_location[location_id] = f
 
         self._lanelet2_map_files_per_location = lanelet2_map_files_per_location
 
@@ -238,15 +268,20 @@ class Dataset:
             # a) Folders with format "X_Y". X=location_id int, Y=location name str.
             # OR
             # b) Folders with format "X". X=location_id int.
+
+            location_id = None
+
             folder_name = f.parent.name
-            pattern = "([0-9]+).*"
-            match = re.match(pattern, folder_name)
-            if match:
-                location_id = int(match.group(1))
-            else:
-                logger.warning(f"Folder name {folder_name} does not match the expected pattern: {pattern}. Skip this folder.")
+            if folder_name == opendrive_dir.name:
                 continue
-            opendrive_map_files_per_location[location_id] = f
+
+            folder_name_pattern = "([0-9]+).*"
+            m = re.match(folder_name_pattern, folder_name)
+            if m:
+                location_id = int(m.group(1))
+
+            if location_id is not None:
+                opendrive_map_files_per_location[location_id] = f
 
         self._opendrive_map_files_per_location = opendrive_map_files_per_location
 
