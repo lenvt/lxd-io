@@ -1,12 +1,13 @@
 import pytest
 
+from pathlib import Path
+
 from lxd_io import Dataset
 from lxd_io.track import Track
 
-from .test_dataset import valid_dataset_with_version_dir
 
 @pytest.fixture
-def valid_track(valid_dataset_with_version_dir) -> Track:
+def valid_track(valid_dataset_with_version_dir: Path) -> Track:
     return Dataset(valid_dataset_with_version_dir).get_recording(1).get_track(1)
 
 def test_track_access_properties(valid_track: Track) -> None:
@@ -18,7 +19,7 @@ def test_track_get_meta_data(valid_track: Track) -> None:
     # Valid meta_data_keys
     for meta_data_key in valid_track.meta_data_keys:
         assert valid_track.get_meta_data(meta_data_key) is not None
-    
+
     # Invalid meta_data_key
     with pytest.raises(KeyError):
         valid_track.get_meta_data("invalid_key")
@@ -27,7 +28,7 @@ def test_track_get_data(valid_track: Track) -> None:
     # Valid data_keys
     for data_key in valid_track.data_keys:
         assert valid_track.get_data(data_key) is not None
-    
+
     # Invalid data_key
     with pytest.raises(KeyError):
         valid_track.get_data("invalid_key")
