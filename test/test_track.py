@@ -10,10 +10,12 @@ from lxd_io.track import Track
 def valid_track(valid_dataset_with_version_dir: Path) -> Track:
     return Dataset(valid_dataset_with_version_dir).get_recording(1).get_track(1)
 
+
 def test_track_access_properties(valid_track: Track) -> None:
     assert valid_track.id == 1
     assert len(valid_track.meta_data_keys) > 0
     assert len(valid_track.data_keys) > 0
+
 
 def test_track_get_meta_data(valid_track: Track) -> None:
     # Valid meta_data_keys
@@ -24,6 +26,7 @@ def test_track_get_meta_data(valid_track: Track) -> None:
     with pytest.raises(KeyError):
         valid_track.get_meta_data("invalid_key")
 
+
 def test_track_get_data(valid_track: Track) -> None:
     # Valid data_keys
     for data_key in valid_track.data_keys:
@@ -32,6 +35,7 @@ def test_track_get_data(valid_track: Track) -> None:
     # Invalid data_key
     with pytest.raises(KeyError):
         valid_track.get_data("invalid_key")
+
 
 def test_track_get_data_at_frame(valid_track: Track) -> None:
     # Valid frames
@@ -47,11 +51,14 @@ def test_track_get_data_at_frame(valid_track: Track) -> None:
     with pytest.raises(KeyError):
         valid_track.get_data_at_frame("xCenter", -1)
 
+
 def test_track_get_data_between_frames(valid_track: Track) -> None:
     # Valid frames
     for frame in valid_track._frames:
         for data_key in valid_track.data_keys:
-            assert valid_track.get_data_between_frames(data_key, frame, frame) is not None
+            assert (
+                valid_track.get_data_between_frames(data_key, frame, frame) is not None
+            )
 
     # Invalid data_key
     with pytest.raises(KeyError):
@@ -73,11 +80,14 @@ def test_track_get_data_between_frames(valid_track: Track) -> None:
     with pytest.raises(KeyError):
         valid_track.get_data_between_frames("xCenter", 1, 0)
 
+
 def test_track_get_local_trajectory(valid_track: Track) -> None:
     assert valid_track.get_local_trajectory() is not None
 
+
 def test_track_get_utm_image_trajectory(valid_track: Track) -> None:
     assert valid_track.get_utm_image_trajectory(0, 0) is not None
+
 
 def test_track_get_bbox_at_frame(valid_track: Track) -> None:
     # Valid frames

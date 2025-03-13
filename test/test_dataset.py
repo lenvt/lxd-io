@@ -7,9 +7,11 @@ from lxd_io.dataset import Dataset
 def invalid_dataset_dir() -> Path:
     return Path("test/data/invalid-dataset")
 
+
 @pytest.fixture
 def invalid_dataset_recording_meta_csv() -> Path:
     return Path("test/data/invalid-dataset/data/1_recordingMeta.csv")
+
 
 @pytest.fixture
 def valid_dataset_with_version_dir() -> Path:
@@ -171,4 +173,6 @@ def test_dataset_get_track_batches(
         assert len(dataset.get_track_batches(1)) == 3
         assert len(dataset.get_track_batches(1, [1])) == 2
         # Non-existing recording_id
-        assert len(dataset.get_track_batches(1, [1, 5])) == len(dataset.get_track_batches(1, [1]))
+        assert len(dataset.get_track_batches(1, [1, 5])) == len(
+            dataset.get_track_batches(1, [1])
+        )
