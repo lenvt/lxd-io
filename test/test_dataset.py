@@ -1,22 +1,22 @@
 import pytest
 from pathlib import Path
 from lxd_io.dataset import Dataset
-  
+
 
 @pytest.fixture
-def invalid_dataset_dir():
+def invalid_dataset_dir() -> Path:
     return Path("test/data/invalid-dataset")
 
 @pytest.fixture
-def valid_dataset_with_version_dir():
+def valid_dataset_with_version_dir() -> Path:
     return Path("test/data/valid-dataset-v1.5")
 
 @pytest.fixture
-def valid_dataset_without_version_dir():
+def valid_dataset_without_version_dir() -> Path:
     return Path("test/data/valid-dataset")
 
 @pytest.fixture
-def valid_dataset_only_name_dir():
+def valid_dataset_only_name_dir() -> Path:
     return Path("test/data/valid_dataset")
 
 def test_dataset_initialization(
@@ -24,7 +24,7 @@ def test_dataset_initialization(
         valid_dataset_with_version_dir: Path,
         valid_dataset_without_version_dir: Path,
         valid_dataset_only_name_dir: Path
-    ):
+    ) -> None:
 
     for dataset_dir in (
             invalid_dataset_dir,
@@ -43,7 +43,7 @@ def test_dataset_read_dataset_info_from_folder_name(
         valid_dataset_with_version_dir: Path,
         valid_dataset_without_version_dir: Path,
         valid_dataset_only_name_dir: Path
-    ):
+    ) -> None:
 
     dataset = Dataset(invalid_dataset_dir)
     assert dataset.id == "invalid"
@@ -66,7 +66,7 @@ def test_dataset_load_background_image_scale_factor(
         valid_dataset_with_version_dir: Path,
         valid_dataset_without_version_dir: Path,
         valid_dataset_only_name_dir: Path
-    ):
+    ) -> None:
 
     for dataset_dir in (
             invalid_dataset_dir,
@@ -74,7 +74,7 @@ def test_dataset_load_background_image_scale_factor(
             valid_dataset_without_version_dir,
             valid_dataset_only_name_dir
         ):
-        
+
         dataset = Dataset(dataset_dir)
         assert dataset._background_image_scale_factor == 1.0
 
@@ -83,7 +83,7 @@ def test_dataset_explore_data_dir(
         valid_dataset_with_version_dir: Path,
         valid_dataset_without_version_dir: Path,
         valid_dataset_only_name_dir: Path
-    ):
+    ) -> None:
 
     dataset = Dataset(invalid_dataset_dir)
     assert len(dataset.recording_ids) == 1
@@ -103,7 +103,7 @@ def test_dataset_explore_maps_dir(
         valid_dataset_with_version_dir: Path,
         valid_dataset_without_version_dir: Path,
         valid_dataset_only_name_dir: Path
-    ):
+    ) -> None:
 
     dataset = Dataset(invalid_dataset_dir)
     assert len(dataset._lanelet2_map_files_per_location) == 1
@@ -123,7 +123,7 @@ def test_dataset_get_recording(
         valid_dataset_with_version_dir: Path,
         valid_dataset_without_version_dir: Path,
         valid_dataset_only_name_dir: Path
-    ):
+    ) -> None:
 
     dataset = Dataset(invalid_dataset_dir)
     for recording_id in dataset.recording_ids:
@@ -137,14 +137,14 @@ def test_dataset_get_recording(
         ):
         dataset = Dataset(dataset_dir)
         for recording_id in dataset.recording_ids:
-            dataset.get_recording(recording_id) 
+            dataset.get_recording(recording_id)
 
 def test_dataset_get_track_batches(
         invalid_dataset_dir: Path,
         valid_dataset_with_version_dir: Path,
         valid_dataset_without_version_dir: Path,
         valid_dataset_only_name_dir: Path
-    ):
+    ) -> None:
 
     dataset = Dataset(invalid_dataset_dir)
     with pytest.raises(KeyError):
