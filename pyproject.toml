@@ -35,6 +35,10 @@ dev = [
     "pytest-cov>=5.0.0",
     "ruff>=0.9.10",
 ]
+build = [
+    "build>=1.2.2.post1",
+    "twine>=6.1.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/lenvt/lxd-io"
