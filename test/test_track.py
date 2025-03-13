@@ -1,7 +1,5 @@
 import pytest
 
-from pathlib import Path
-
 from lxd_io import Dataset
 from lxd_io.track import Track
 
