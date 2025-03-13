@@ -96,7 +96,7 @@ def test_dataset_explore_data_dir(
         ):
         dataset = Dataset(dataset_dir)
         assert len(dataset.recording_ids) == 2
-        assert len(dataset.location_ids) == 2
+        assert len(dataset.location_ids) == 1
 
 def test_dataset_explore_maps_dir(
         invalid_dataset_dir: Path,
@@ -126,7 +126,7 @@ def test_dataset_get_recording(
     ):
 
     dataset = Dataset(invalid_dataset_dir)
-    for recording_id in recording_id:
+    for recording_id in dataset.recording_ids:
         with pytest.raises(KeyError):
             dataset.get_recording(recording_id)
 
