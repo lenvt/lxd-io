@@ -1,0 +1,3 @@
+trackId,frame,laneletId,lonLaneletPos,otherData
+1,0,1000;1001,5.0;4.3,data
+1,1,1000,6.0,data
