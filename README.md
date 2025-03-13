@@ -16,4 +16,4 @@ python -m pip install lxd-io
 
 ## Use
 
-Check [the tutorial notebook](https://github.com/lenvt/lxd-io/blob/main/tutorial.ipynb) or [test/test_lxd_io.py](https://github.com/lenvt/lxd-io/blob/main/test/test_lxd_io.py) for usage info.
+Check [the tutorial notebook](https://github.com/lenvt/lxd-io/blob/main/tutorial.ipynb) or the tests to see usage examples.
