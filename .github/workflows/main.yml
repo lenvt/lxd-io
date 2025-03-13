@@ -48,4 +48,5 @@ jobs:
 
     - name: Lint code with ruff
       run: |
+        uv run ruff check .
         uv run ruff check --output-format=github .
