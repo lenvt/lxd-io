@@ -3,9 +3,9 @@ import pandas as pd
 
 
 class Track:
-
-    def __init__(self, track_id: int, track_meta_data: dict, track_data: pd.DataFrame) -> None:
-
+    def __init__(
+        self, track_id: int, track_meta_data: dict, track_data: pd.DataFrame
+    ) -> None:
         self._track_id = track_id
         self._track_meta_data = track_meta_data
         self._track_data = track_data
@@ -30,7 +30,6 @@ class Track:
         return list(self._track_data.columns)
 
     def get_meta_data(self, key: str) -> any:
-
         if key not in self._track_meta_data:
             msg = f"Invalid track meta data key: {key}"
             raise KeyError(msg)
@@ -40,7 +39,6 @@ class Track:
         return data
 
     def get_data(self, key: str) -> np.ndarray:
-
         if key not in self._track_data.columns:
             msg = f"Invalid track data key: {key}"
             raise KeyError(msg)
@@ -50,7 +48,6 @@ class Track:
         return data
 
     def get_data_at_frame(self, key: str, frame: int) -> any:
-
         if key not in self._track_data.columns:
             msg = f"Invalid track data key: {key}"
             raise KeyError(msg)
@@ -59,12 +56,13 @@ class Track:
             msg = f"Invalid frame: {frame}"
             raise KeyError(msg)
 
-        data = self._track_data.loc[self._track_data["frame"] == frame][key].to_numpy()[0]
+        data = self._track_data.loc[self._track_data["frame"] == frame][key].to_numpy()[
+            0
+        ]
 
         return data
 
     def get_data_between_frames(self, key: str, frame0: int, frame1: int) -> any:
-
         if key not in self._track_data.columns:
             msg = f"Invalid track data key: {key}"
             raise KeyError(msg)
@@ -75,12 +73,15 @@ class Track:
                 raise KeyError(msg)
 
         frames = np.arange(frame0, frame1 + 1)
-        data = self._track_data.loc[self._track_data["frame"].isin(frames)].sort_values(by="frame")[key].to_numpy()
+        data = (
+            self._track_data.loc[self._track_data["frame"].isin(frames)]
+            .sort_values(by="frame")[key]
+            .to_numpy()
+        )
 
         return data
 
     def get_local_trajectory(self) -> np.ndarray:
-
         if self._is_highd:
             x = self._track_data["x"] + self._track_data["width"] / 2
             y = self._track_data["y"] + self._track_data["height"] / 2
@@ -92,8 +93,9 @@ class Track:
 
         return trajectory
 
-    def get_utm_image_trajectory(self, utm_origin_x: float, utm_origin_y: float) -> np.ndarray:
-
+    def get_utm_image_trajectory(
+        self, utm_origin_x: float, utm_origin_y: float
+    ) -> np.ndarray:
         if self._is_highd:
             return self.get_local_trajectory()
 
@@ -104,14 +106,19 @@ class Track:
 
         return utm_trajectory
 
-    def get_background_image_trajectory(self, px2m_factor: float, background_image_scale_factor: float = 1.0) -> np.ndarray:
-
+    def get_background_image_trajectory(
+        self, px2m_factor: float, background_image_scale_factor: float = 1.0
+    ) -> np.ndarray:
         if self._is_highd:
-            x_image = (self._track_data["x"] + self._track_data["width"] / 2) / px2m_factor
-            y_image = (self._track_data["y"] + self._track_data["height"] / 2) / px2m_factor
+            x_image = (
+                self._track_data["x"] + self._track_data["width"] / 2
+            ) / px2m_factor
+            y_image = (
+                self._track_data["y"] + self._track_data["height"] / 2
+            ) / px2m_factor
         else:
             x_image = self._track_data["xCenter"] / px2m_factor
-            y_image = - self._track_data["yCenter"] / px2m_factor
+            y_image = -self._track_data["yCenter"] / px2m_factor
         image_trajectory = np.vstack((x_image, y_image)).T
 
         # Scale down factor
@@ -119,8 +126,9 @@ class Track:
 
         return image_trajectory
 
-    def get_bbox_at_frame(self, frame: int, visualization_mode: bool = False, ortho_px_to_m: float = 0.1) -> np.ndarray:
-
+    def get_bbox_at_frame(
+        self, frame: int, visualization_mode: bool = False, ortho_px_to_m: float = 0.1
+    ) -> np.ndarray:
         if self._is_highd:
             length = self.get_meta_data("width")
             width = self.get_meta_data("height")
@@ -144,16 +152,18 @@ class Track:
             if heading < 0:
                 heading += 360
 
-        return self._bbox_to_vertices(x_center, y_center, length, width, np.deg2rad(heading))
+        return self._bbox_to_vertices(
+            x_center, y_center, length, width, np.deg2rad(heading)
+        )
 
     @staticmethod
     def _bbox_to_vertices(
-            x_center: np.ndarray,
-            y_center: np.ndarray,
-            length: np.ndarray,
-            width: np.ndarray,
-            heading: np.ndarray
-        ) -> np.ndarray:
+        x_center: np.ndarray,
+        y_center: np.ndarray,
+        length: np.ndarray,
+        width: np.ndarray,
+        heading: np.ndarray,
+    ) -> np.ndarray:
         """
         Calculate the corners of a rotated bbox from the position, shape and heading for every timestamp.
 
@@ -199,6 +209,8 @@ class Track:
         rotated_bbox_vertices[:, 3, 1] = ls - wc
 
         # Move corners of rotated bounding box from the origin to the object's location
-        rotated_bbox_vertices = rotated_bbox_vertices + np.expand_dims(centroids, axis=1)
+        rotated_bbox_vertices = rotated_bbox_vertices + np.expand_dims(
+            centroids, axis=1
+        )
 
         return rotated_bbox_vertices
