@@ -260,7 +260,7 @@ class Recording:
             background_image_trajectory[:, 0],
             background_image_trajectory[:, 1],
             color="red",
-            linewidth=1,
+            linewidth=2,
         )
         ax.axis("off")
         f.savefig(plot_file, bbox_inches="tight", pad_inches=0)
@@ -302,7 +302,7 @@ class Recording:
                         background_image_trajectory[:, 0],
                         background_image_trajectory[:, 1],
                         color="red",
-                        linewidth=1,
+                        linewidth=2,
                     )
 
             ax.axis("off")
