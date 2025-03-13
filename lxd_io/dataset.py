@@ -4,7 +4,6 @@ import json
 import re
 import pandas as pd
 
-from functools import lru_cache
 from loguru import logger
 from pathlib import Path
 
@@ -251,7 +250,6 @@ class Dataset:
 
         self._opendrive_map_files_per_location = opendrive_map_files_per_location
 
-    @lru_cache(maxsize=5)
     def get_recording(self, recording_id: str) -> Recording:
 
         logger.debug("Get recording {}.", recording_id)
