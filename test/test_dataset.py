@@ -9,6 +9,11 @@ def invalid_dataset_dir() -> Path:
 
 
 @pytest.fixture
+def invalid_dataset_recording_meta_csv() -> Path:
+    return Path("test/data/invalid-dataset/data/1_recordingMeta.csv")
+
+
+@pytest.fixture
 def valid_dataset_with_version_dir() -> Path:
     return Path("test/data/valid-dataset-v1.5")
 
@@ -28,6 +33,7 @@ def test_dataset_initialization(
     valid_dataset_with_version_dir: Path,
     valid_dataset_without_version_dir: Path,
     valid_dataset_only_name_dir: Path,
+    invalid_dataset_recording_meta_csv: Path,
 ) -> None:
     for dataset_dir in (
         invalid_dataset_dir,
@@ -39,6 +45,9 @@ def test_dataset_initialization(
 
     with pytest.raises(FileNotFoundError):
         Dataset(Path("/path/to/invalid/dataset"))
+
+    with pytest.raises(FileNotFoundError):
+        Dataset(invalid_dataset_recording_meta_csv)
 
 
 def test_dataset_read_dataset_info_from_folder_name(
@@ -89,6 +98,7 @@ def test_dataset_explore_data_dir(
     dataset = Dataset(invalid_dataset_dir)
     assert len(dataset.recording_ids) == 1
     assert len(dataset.location_ids) == 1
+    assert len(dataset.recordings_at_location) == 1
 
     for dataset_dir in (
         valid_dataset_with_version_dir,
@@ -98,6 +108,7 @@ def test_dataset_explore_data_dir(
         dataset = Dataset(dataset_dir)
         assert len(dataset.recording_ids) == 2
         assert len(dataset.location_ids) == 1
+        assert len(dataset.recordings_at_location) == 1
 
 
 def test_dataset_explore_maps_dir(
@@ -159,7 +170,9 @@ def test_dataset_get_track_batches(
         valid_dataset_only_name_dir,
     ):
         dataset = Dataset(dataset_dir)
-        for recording_id in dataset.recording_ids:
-            for track_id in dataset.get_recording(recording_id).track_ids:
-                assert len(dataset.get_track_batches(track_id)) == 2
-                assert len(dataset.get_track_batches(track_id, [1])) == 1
+        assert len(dataset.get_track_batches(1)) == 3
+        assert len(dataset.get_track_batches(1, [1])) == 2
+        # Non-existing recording_id
+        assert len(dataset.get_track_batches(1, [1, 5])) == len(
+            dataset.get_track_batches(1, [1])
+        )

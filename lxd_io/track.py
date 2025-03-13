@@ -72,6 +72,10 @@ class Track:
                 msg = f"Invalid frame: {frame}"
                 raise KeyError(msg)
 
+        if frame0 > frame1:
+            msg = f"Invalid frame range: {frame0} > {frame1}"
+            raise KeyError(msg)
+
         frames = np.arange(frame0, frame1 + 1)
         data = (
             self._track_data.loc[self._track_data["frame"].isin(frames)]
@@ -139,8 +143,8 @@ class Track:
         else:
             x_center = self.get_data_at_frame("xCenter", frame)
             y_center = self.get_data_at_frame("yCenter", frame)
-            length = self.get_meta_data("length")
-            width = self.get_meta_data("width")
+            length = self.get_data_at_frame("length", frame)
+            width = self.get_data_at_frame("width", frame)
             heading = self.get_data_at_frame("heading", frame)
 
         if visualization_mode:
