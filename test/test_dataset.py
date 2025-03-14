@@ -1,6 +1,7 @@
 import pytest
 from pathlib import Path
-from lxd_io.dataset import Dataset
+from lxd_io import Dataset
+from lxd_io.recording import Recording
 
 
 @pytest.fixture
@@ -28,18 +29,25 @@ def valid_dataset_only_name_dir() -> Path:
     return Path("test/data/valid_dataset")
 
 
+@pytest.fixture
+def valid_highd_like_dataset_dir() -> Path:
+    return Path("test/data/highD-dataset-v1.0")
+
+
 def test_dataset_initialization(
     invalid_dataset_dir: Path,
     valid_dataset_with_version_dir: Path,
     valid_dataset_without_version_dir: Path,
     valid_dataset_only_name_dir: Path,
     invalid_dataset_recording_meta_csv: Path,
+    valid_highd_like_dataset_dir: Path,
 ) -> None:
     for dataset_dir in (
         invalid_dataset_dir,
         valid_dataset_with_version_dir,
         valid_dataset_without_version_dir,
         valid_dataset_only_name_dir,
+        valid_highd_like_dataset_dir,
     ):
         Dataset(dataset_dir)
 
@@ -55,6 +63,7 @@ def test_dataset_read_dataset_info_from_folder_name(
     valid_dataset_with_version_dir: Path,
     valid_dataset_without_version_dir: Path,
     valid_dataset_only_name_dir: Path,
+    valid_highd_like_dataset_dir: Path,
 ) -> None:
     dataset = Dataset(invalid_dataset_dir)
     assert dataset.id == "invalid"
@@ -72,12 +81,17 @@ def test_dataset_read_dataset_info_from_folder_name(
     assert dataset.id == "valid_dataset"
     assert dataset.version == "0.0"
 
+    dataset = Dataset(valid_highd_like_dataset_dir)
+    assert dataset.id == "highd"
+    assert dataset.version == "1.0"
+
 
 def test_dataset_load_background_image_scale_factor(
     invalid_dataset_dir: Path,
     valid_dataset_with_version_dir: Path,
     valid_dataset_without_version_dir: Path,
     valid_dataset_only_name_dir: Path,
+    valid_highd_like_dataset_dir: Path,
 ) -> None:
     for dataset_dir in (
         invalid_dataset_dir,
@@ -88,12 +102,16 @@ def test_dataset_load_background_image_scale_factor(
         dataset = Dataset(dataset_dir)
         assert dataset._background_image_scale_factor == 1.0
 
+    dataset = Dataset(valid_highd_like_dataset_dir)
+    assert dataset._background_image_scale_factor == 4.0
+
 
 def test_dataset_explore_data_dir(
     invalid_dataset_dir: Path,
     valid_dataset_with_version_dir: Path,
     valid_dataset_without_version_dir: Path,
     valid_dataset_only_name_dir: Path,
+    valid_highd_like_dataset_dir: Path,
 ) -> None:
     dataset = Dataset(invalid_dataset_dir)
     assert len(dataset.recording_ids) == 1
@@ -110,12 +128,18 @@ def test_dataset_explore_data_dir(
         assert len(dataset.location_ids) == 1
         assert len(dataset.recordings_at_location) == 1
 
+    dataset = Dataset(valid_highd_like_dataset_dir)
+    assert len(dataset.recording_ids) == 1
+    assert len(dataset.location_ids) == 1
+    assert len(dataset.recordings_at_location) == 1
+
 
 def test_dataset_explore_maps_dir(
     invalid_dataset_dir: Path,
     valid_dataset_with_version_dir: Path,
     valid_dataset_without_version_dir: Path,
     valid_dataset_only_name_dir: Path,
+    valid_highd_like_dataset_dir: Path,
 ) -> None:
     dataset = Dataset(invalid_dataset_dir)
     assert len(dataset._lanelet2_map_files_per_location) == 1
@@ -130,26 +154,36 @@ def test_dataset_explore_maps_dir(
         assert len(dataset._lanelet2_map_files_per_location) == 1
         assert len(dataset._opendrive_map_files_per_location) == 1
 
+    dataset = Dataset(valid_highd_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 0
+    assert len(dataset._opendrive_map_files_per_location) == 0
+
 
 def test_dataset_get_recording(
     invalid_dataset_dir: Path,
     valid_dataset_with_version_dir: Path,
     valid_dataset_without_version_dir: Path,
     valid_dataset_only_name_dir: Path,
+    valid_highd_like_dataset_dir: Path,
 ) -> None:
+    # Invalid recording data
     dataset = Dataset(invalid_dataset_dir)
     for recording_id in dataset.recording_ids:
         with pytest.raises(KeyError):
             dataset.get_recording(recording_id)
+    # Invalid recording id
+    with pytest.raises(KeyError):
+        dataset.get_recording(10)
 
     for dataset_dir in (
         valid_dataset_with_version_dir,
         valid_dataset_without_version_dir,
         valid_dataset_only_name_dir,
+        valid_highd_like_dataset_dir,
     ):
         dataset = Dataset(dataset_dir)
         for recording_id in dataset.recording_ids:
-            dataset.get_recording(recording_id)
+            assert isinstance(dataset.get_recording(recording_id), Recording)
 
 
 def test_dataset_get_track_batches(
@@ -157,6 +191,7 @@ def test_dataset_get_track_batches(
     valid_dataset_with_version_dir: Path,
     valid_dataset_without_version_dir: Path,
     valid_dataset_only_name_dir: Path,
+    valid_highd_like_dataset_dir: Path,
 ) -> None:
     dataset = Dataset(invalid_dataset_dir)
     with pytest.raises(KeyError):
@@ -176,3 +211,11 @@ def test_dataset_get_track_batches(
         assert len(dataset.get_track_batches(1, [1, 5])) == len(
             dataset.get_track_batches(1, [1])
         )
+
+    dataset = Dataset(valid_highd_like_dataset_dir)
+    assert len(dataset.get_track_batches(1)) == 2
+    assert len(dataset.get_track_batches(1, [1])) == 2
+    # Non-existing recording_id
+    assert len(dataset.get_track_batches(1, [1, 5])) == len(
+        dataset.get_track_batches(1, [1])
+    )
