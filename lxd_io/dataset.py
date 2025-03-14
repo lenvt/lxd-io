@@ -15,6 +15,8 @@ class Dataset:
     TRACKS_META_FILE_SUFFIX = "_tracksMeta.csv"
     RECORDING_META_FILE_SUFFIX = "_recordingMeta.csv"
     BACKGROUND_IMAGE_FILE_SUFFIX = ("_background.png", "_highway.jpg", "_highway.png")
+    POSSIBLE_LANELET_DIR_NAMES = ("lanelet2", "lanelets", "lanelet", "../lanelets")
+    POSSIBLE_OPENDRIVE_DIR_NAMES = ("opendrive", ".")
 
     def __init__(
         self,
@@ -259,12 +261,37 @@ class Dataset:
         logger.debug("Search for maps in: {}", self._maps_dir)
 
         # Lanelet2
-        lanelet2_dir = self._maps_dir / "lanelet2"
-        self._find_lanelet2_maps(lanelet2_dir)
+        # Find existing lanelet2 dirs
+        potential_lanelet2_dirs = []
+        for dir_name in self.POSSIBLE_LANELET_DIR_NAMES:
+            lanelet2_dir = (self._maps_dir / dir_name).resolve()
+            if lanelet2_dir.exists() and lanelet2_dir.is_dir():
+                potential_lanelet2_dirs.append(lanelet2_dir)
+
+        if len(potential_lanelet2_dirs) == 0:
+            logger.warning("No Lanelet2 map directories found.")
+        elif len(potential_lanelet2_dirs) > 1:
+            msg = f"Multiple Lanelet2 map directories found: {potential_lanelet2_dirs}. Cannot decide which is the right one."
+            raise ValueError(msg)
+        else:
+            self._find_lanelet2_maps(potential_lanelet2_dirs[0])
 
         # OpenDRIVE
-        opendrive_dir = self._maps_dir / "opendrive"
-        self._find_opendrive_maps(opendrive_dir)
+        # Find existing opendrive dirs
+        potential_opendrive_dirs = []
+        for dir_name in self.POSSIBLE_OPENDRIVE_DIR_NAMES:
+            opendrive_dir = (self._maps_dir / dir_name).resolve()
+            if opendrive_dir.exists() and opendrive_dir.is_dir():
+                potential_opendrive_dirs.append(opendrive_dir)
+                break
+
+        if len(potential_opendrive_dirs) == 0:
+            logger.warning("No OpenDrive map directories found.")
+        elif len(potential_opendrive_dirs) > 1:
+            msg = f"Multiple OpenDrive map directories found: {potential_opendrive_dirs}. Cannot decide which is the right one."
+            raise ValueError(msg)
+        else:
+            self._find_opendrive_maps(potential_opendrive_dirs[0])
 
     def _find_lanelet2_maps(self, lanelet2_dir: Path) -> None:
         if not lanelet2_dir.exists() or not lanelet2_dir.is_dir():
