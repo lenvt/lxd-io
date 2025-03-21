@@ -340,13 +340,30 @@ class Dataset:
             if folder_name == opendrive_dir.name:
                 continue
 
-            folder_name_pattern = "([0-9]+).*"
-            m = re.match(folder_name_pattern, folder_name)
-            if m:
-                location_id = int(m.group(1))
+            potential_folder_name_patterns = {
+                "two_locations": "([0-9]+)_([0-9]+).*",  # special case for exid map
+                "one_location": "([0-9]+).*",
+            }
 
-            if location_id is not None:
-                opendrive_map_files_per_location[location_id] = f
+            for (
+                pattern_name,  # noqa: B007
+                folder_name_pattern,
+            ) in potential_folder_name_patterns.items():
+                m = re.match(folder_name_pattern, folder_name)
+                if m:
+                    break
+
+            if m:
+                if pattern_name == "one_location":
+                    location_id = int(m.group(1))
+                    opendrive_map_files_per_location[location_id] = f
+
+                elif pattern_name == "two_locations":
+                    location_id1 = int(m.group(1))
+                    location_id2 = int(m.group(2))
+
+                    opendrive_map_files_per_location[location_id1] = f
+                    opendrive_map_files_per_location[location_id2] = f
 
         self._opendrive_map_files_per_location = opendrive_map_files_per_location
 
