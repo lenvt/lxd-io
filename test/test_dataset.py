@@ -34,6 +34,61 @@ def valid_highd_like_dataset_dir() -> Path:
     return Path("test/data/highD-dataset-v1.0")
 
 
+@pytest.fixture
+def ind_1_0_like_dataset_dir() -> Path:
+    return Path("test/data/inD-dataset-v1.0")
+
+
+@pytest.fixture
+def ind_1_1_like_dataset_dir() -> Path:
+    return Path("test/data/inD-dataset-v1.1")
+
+
+@pytest.fixture
+def round_1_0_like_dataset_dir() -> Path:
+    return Path("test/data/rounD-dataset-v1.0")
+
+
+@pytest.fixture
+def round_1_1_like_dataset_dir() -> Path:
+    return Path("test/data/rounD-dataset-v1.1")
+
+
+@pytest.fixture
+def unid_1_0_like_dataset_dir() -> Path:
+    return Path("test/data/uniD-dataset-v1.0")
+
+
+@pytest.fixture
+def unid_1_1_like_dataset_dir() -> Path:
+    return Path("test/data/uniD-dataset-v1.1")
+
+
+@pytest.fixture
+def exid_1_0_like_dataset_dir() -> Path:
+    return Path("test/data/exiD-dataset-v1.0")
+
+
+@pytest.fixture
+def exid_1_1_like_dataset_dir() -> Path:
+    return Path("test/data/exiD-dataset-v1.1")
+
+
+@pytest.fixture
+def exid_1_2_like_dataset_dir() -> Path:
+    return Path("test/data/exiD-dataset-v1.2")
+
+
+@pytest.fixture
+def exid_2_0_like_dataset_dir() -> Path:
+    return Path("test/data/exiD-dataset-v2.0")
+
+
+@pytest.fixture
+def exid_2_1_like_dataset_dir() -> Path:
+    return Path("test/data/exiD-dataset-v2.1")
+
+
 def test_dataset_initialization(
     invalid_dataset_dir: Path,
     valid_dataset_with_version_dir: Path,
@@ -140,6 +195,17 @@ def test_dataset_explore_maps_dir(
     valid_dataset_without_version_dir: Path,
     valid_dataset_only_name_dir: Path,
     valid_highd_like_dataset_dir: Path,
+    ind_1_0_like_dataset_dir: Path,
+    ind_1_1_like_dataset_dir: Path,
+    round_1_0_like_dataset_dir: Path,
+    round_1_1_like_dataset_dir: Path,
+    unid_1_0_like_dataset_dir: Path,
+    unid_1_1_like_dataset_dir: Path,
+    exid_1_0_like_dataset_dir: Path,
+    exid_1_1_like_dataset_dir: Path,
+    exid_1_2_like_dataset_dir: Path,
+    exid_2_0_like_dataset_dir: Path,
+    exid_2_1_like_dataset_dir: Path,
 ) -> None:
     dataset = Dataset(invalid_dataset_dir)
     assert len(dataset._lanelet2_map_files_per_location) == 1
@@ -154,9 +220,67 @@ def test_dataset_explore_maps_dir(
         assert len(dataset._lanelet2_map_files_per_location) == 1
         assert len(dataset._opendrive_map_files_per_location) == 1
 
+    # Test all known dataset structures of the public datasets
+
+    # highd
     dataset = Dataset(valid_highd_like_dataset_dir)
     assert len(dataset._lanelet2_map_files_per_location) == 0
     assert len(dataset._opendrive_map_files_per_location) == 0
+
+    # ind 1.0
+    dataset = Dataset(ind_1_0_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 2
+    assert len(dataset._opendrive_map_files_per_location) == 0
+
+    # ind 1.1
+    dataset = Dataset(ind_1_1_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 2
+    assert len(dataset._opendrive_map_files_per_location) == 2
+
+    # round 1.0
+    dataset = Dataset(round_1_0_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 1
+    assert len(dataset._opendrive_map_files_per_location) == 0
+
+    # round 1.1
+    dataset = Dataset(round_1_1_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 2
+    assert len(dataset._opendrive_map_files_per_location) == 2
+
+    # unid 1.0
+    dataset = Dataset(unid_1_0_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 0
+    assert len(dataset._opendrive_map_files_per_location) == 0
+
+    # unid 1.1
+    dataset = Dataset(unid_1_1_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 1
+    assert len(dataset._opendrive_map_files_per_location) == 1
+
+    # exid 1.0
+    dataset = Dataset(exid_1_0_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 0
+    assert len(dataset._opendrive_map_files_per_location) == 3
+
+    # exid 1.1
+    dataset = Dataset(exid_1_1_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 0
+    assert len(dataset._opendrive_map_files_per_location) == 3
+
+    # exid 1.2
+    dataset = Dataset(exid_1_2_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 0
+    assert len(dataset._opendrive_map_files_per_location) == 3
+
+    # exid 2.0
+    dataset = Dataset(exid_2_0_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 3
+    assert len(dataset._opendrive_map_files_per_location) == 3
+
+    # exid 2.1
+    dataset = Dataset(exid_2_1_like_dataset_dir)
+    assert len(dataset._lanelet2_map_files_per_location) == 3
+    assert len(dataset._opendrive_map_files_per_location) == 3
 
 
 def test_dataset_get_recording(
