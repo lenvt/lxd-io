@@ -2,9 +2,12 @@
 
 Read [leveLXData](https://levelxdata.com/) datasets without boilerplate code.
 
-* Supported datasets: [exiD](https://www.exid-dataset.com/), [highD](https://highd-dataset.com/), [inD](https://www.ind-dataset.com/), [rounD](https://www.round-dataset.com/), [uniD](https://www.unid-dataset.com/)
-
-* Tested on: highD, exiD
+Supported datasets are
+* [exiD](https://www.exid-dataset.com/)
+* [highD](https://highd-dataset.com/)
+* [inD](https://www.ind-dataset.com/)
+* [rounD](https://www.round-dataset.com/)
+* [uniD](https://www.unid-dataset.com/)
 
 ## Install
 
