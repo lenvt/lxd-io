@@ -44,7 +44,7 @@ def test_track_get_data(valid_track: Track, valid_highd_track: Track) -> None:
         assert valid_highd_track.get_data(data_key) is not None
 
     # Invalid data_key
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError, match="Invalid track data key: invalid_key"):
         valid_track.get_data("invalid_key")
 
 
@@ -58,11 +58,11 @@ def test_track_get_data_at_frame(valid_track: Track, valid_highd_track: Track) -
             assert valid_highd_track.get_data_at_frame(data_key, frame) is not None
 
     # Invalid data_key
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError, match="Invalid track data key: invalid_key"):
         valid_track.get_data_at_frame("invalid_key", 0)
 
     # Invalid frame
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError, match=r"Invalid frame: -1"):
         valid_track.get_data_at_frame("xCenter", -1)
 
 
