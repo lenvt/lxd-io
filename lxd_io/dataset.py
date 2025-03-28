@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-import pandas as pd
+import polars as pl
 
 from loguru import logger
 from pathlib import Path
@@ -230,9 +230,9 @@ class Dataset:
                 self._recording_ids.append(recording_id)
 
                 # Get location id
-                recording_meta = pd.read_csv(
+                recording_meta = pl.read_csv(
                     self._recording_meta_files[recording_id]
-                ).to_dict(orient="records")[0]
+                ).to_dicts()[0]
                 location_id = recording_meta["locationId"]
 
                 # Store location id

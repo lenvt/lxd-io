@@ -1,10 +1,48 @@
+from __future__ import annotations
+
 import numpy as np
-import pandas as pd
+import polars as pl
+
+from typing import TypeVar
+
+T = TypeVar("T", int, float)
 
 
 class Track:
+    MAX_CONFLICTING_LANELETS = 5
+
+    SEMICOLON_LIST_COLUMNS = (
+        "leftAlongsideId",
+        "rightAlongsideId",
+        "laneletId",
+        "latLaneCenterOffset",
+        "lonLaneletPos",
+        "laneletLength",
+        "laneWidth",
+    )
+
+    _SEMICOLON_LIST_COLUMN_DTYPE = (
+        ("leftAlongsideId", int),
+        ("rightAlongsideId", int),
+        ("laneletId", int),
+        ("latLaneCenterOffset", float),
+        ("lonLaneletPos", float),
+        ("laneletLength", float),
+        ("laneWidth", float),
+    )
+
+    SEMICOLON_LIST_COLUMN_DEFAULT = (
+        ("leftAlongsideId", -1),
+        ("rightAlongsideId", -1),
+        ("laneletId", -1),
+        ("latLaneCenterOffset", np.nan),
+        ("lonLaneletPos", np.nan),
+        ("laneletLength", np.nan),
+        ("laneWidth", np.nan),
+    )
+
     def __init__(
-        self, track_id: int, track_meta_data: dict, track_data: pd.DataFrame
+        self, track_id: int, track_meta_data: dict, track_data: pl.DataFrame
     ) -> None:
         self._track_id = track_id
         self._track_meta_data = track_meta_data
@@ -15,7 +53,8 @@ class Track:
         else:
             self._is_highd = True
 
-        self._frames = self._track_data["frame"].tolist()
+        self._frames = self._track_data["frame"].to_list()
+        self._semicolon_list_data = {}
 
     @property
     def id(self) -> int:
@@ -38,12 +77,52 @@ class Track:
 
         return data
 
+    def _get_semicolon_list_df(self, key: str) -> pl.DataFrame:
+        """
+        Helper method to process the semicolon list columns on demand.
+        """
+
+        def semicolon_list_str_to_fixed_len_list(
+            semicolon_list_str: str,
+            fixed_len: int = self.MAX_CONFLICTING_LANELETS,
+            dtype: type[T] = float,
+            fill_value: T = np.nan,
+        ) -> list[float]:
+            output_list = [fill_value] * fixed_len
+            if semicolon_list_str:
+                if ";" in semicolon_list_str:
+                    for i, v in enumerate(semicolon_list_str.split(";")):
+                        output_list[i] = dtype(v)
+                else:
+                    output_list[0] = dtype(semicolon_list_str)
+            return output_list
+
+        if key not in self._semicolon_list_data:
+            dtype = dict(self._SEMICOLON_LIST_COLUMN_DTYPE)[key]
+            self._semicolon_list_data[key] = self._track_data.select(
+                pl.col("frame"), pl.col(key)
+            ).with_columns(
+                pl.col(key).map_elements(
+                    lambda semicolon_list_str: semicolon_list_str_to_fixed_len_list(
+                        semicolon_list_str,
+                        dtype=dtype,
+                        fill_value=dict(self.SEMICOLON_LIST_COLUMN_DEFAULT)[key],
+                    ),
+                    return_dtype=pl.List(pl.Int64 if dtype is int else pl.Float64),
+                )
+            )
+
+        return self._semicolon_list_data[key]
+
     def get_data(self, key: str) -> np.ndarray:
         if key not in self._track_data.columns:
             msg = f"Invalid track data key: {key}"
             raise KeyError(msg)
 
-        data = self._track_data[key].to_numpy()
+        if key in self.SEMICOLON_LIST_COLUMNS:
+            data = np.array(self._get_semicolon_list_df(key).to_series().to_list())
+        else:
+            data = self._track_data[key].to_numpy()
 
         return data
 
@@ -56,9 +135,14 @@ class Track:
             msg = f"Invalid frame: {frame}"
             raise KeyError(msg)
 
-        data = self._track_data.loc[self._track_data["frame"] == frame][key].to_numpy()[
-            0
-        ]
+        if key in self.SEMICOLON_LIST_COLUMNS:
+            data = (
+                self._get_semicolon_list_df(key)
+                .filter(pl.col("frame") == frame)[key][0]
+                .to_list()
+            )
+        else:
+            data = self._track_data.filter(pl.col("frame") == frame)[key][0]
 
         return data
 
@@ -76,12 +160,18 @@ class Track:
             msg = f"Invalid frame range: {frame0} > {frame1}"
             raise KeyError(msg)
 
-        frames = np.arange(frame0, frame1 + 1)
-        data = (
-            self._track_data.loc[self._track_data["frame"].isin(frames)]
-            .sort_values(by="frame")[key]
-            .to_numpy()
-        )
+        if key in self.SEMICOLON_LIST_COLUMNS:
+            data = np.array(
+                self._get_semicolon_list_df(key)
+                .filter(pl.col("frame").is_between(frame0, frame1))[key]
+                .to_list()
+            )
+        else:
+            data = (
+                self._track_data.filter(pl.col("frame").is_between(frame0, frame1))
+                .sort("frame")[key]
+                .to_numpy()
+            )
 
         return data
 
