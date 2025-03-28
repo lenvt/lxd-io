@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+import polars as pl
 
 from loguru import logger
 from pathlib import Path
@@ -28,11 +28,9 @@ class Recording:
 
         logger.debug("Load csv files for recording {}.", recording_id)
 
-        self._recording_meta_data = pd.read_csv(recording_meta_file).to_dict(
-            orient="records"
-        )[0]
+        self._recording_meta_data = pl.read_csv(recording_meta_file).to_dicts()[0]
 
-        self._tracks_meta_data = pd.read_csv(tracks_meta_file)
+        self._tracks_meta_data = pl.read_csv(tracks_meta_file)
 
         self._tracks_file = tracks_file
         self._tracks_data = None
@@ -45,7 +43,7 @@ class Recording:
         self._track_id_key = "trackId" if "trackId" in self._tracks_meta_data else "id"
         self._is_highd = "trackId" not in self._tracks_meta_data
 
-        self._track_ids = self._tracks_meta_data[self._track_id_key].tolist()
+        self._track_ids = self._tracks_meta_data[self._track_id_key].to_list()
 
         initial_frame = 0 if not self._is_highd else 1
         try:
@@ -60,48 +58,13 @@ class Recording:
 
         self._tracks = {}
 
-    def _read_tracks_file(self, tracks_file: Path) -> pd.DataFrame:
+    def _read_tracks_file(self, tracks_file: Path) -> pl.DataFrame:
         logger.debug("Load tracks file for recording {}", self._recording_id)
 
-        if self._is_highd:
-            return pd.read_csv(tracks_file)
-
-        n_max_overlapping_lanelets = 5
-
-        def semi_colon_int_list_to_list(semi_colon_list: list) -> list:
-            output_list = [np.nan] * n_max_overlapping_lanelets
-            if semi_colon_list:
-                if ";" in semi_colon_list:
-                    for i, v in enumerate(semi_colon_list.split(";")):
-                        output_list[i] = int(v)
-                else:
-                    output_list[0] = int(semi_colon_list)
-            return output_list
-
-        def semi_colon_float_list_to_list(semi_colon_list: list) -> list:
-            output_list = [np.nan] * n_max_overlapping_lanelets
-            if semi_colon_list:
-                if ";" in semi_colon_list:
-                    for i, v in enumerate(semi_colon_list.split(";")):
-                        output_list[i] = float(v)
-                else:
-                    output_list[0] = float(semi_colon_list)
-            return output_list
-
-        tracks_data = pd.read_csv(
-            tracks_file,
-            converters={
-                "leftAlongsideId": semi_colon_int_list_to_list,
-                "rightAlongsideId": semi_colon_int_list_to_list,
-                "laneletId": semi_colon_int_list_to_list,
-                "latLaneCenterOffset": semi_colon_float_list_to_list,
-                "lonLaneletPos": semi_colon_float_list_to_list,
-                "laneletLength": semi_colon_float_list_to_list,
-                "laneWidth": semi_colon_float_list_to_list,
-            },
-        )
-
-        return tracks_data
+        schema_overrides = None
+        if not self._is_highd:
+            schema_overrides = {col: pl.Utf8 for col in Track.SEMICOLON_LIST_COLUMNS}
+        return pl.read_csv(tracks_file, schema_overrides=schema_overrides)
 
     @property
     def id(self) -> int:
@@ -143,7 +106,7 @@ class Recording:
     def opendrive_map_file(self, opendrive_map_file: Path) -> None:
         self._opendrive_map_file = opendrive_map_file
 
-    def _get_tracks_data(self) -> pd.DataFrame:
+    def _get_tracks_data(self) -> pl.DataFrame:
         if self._tracks_data is None:
             self._tracks_data = self._read_tracks_file(self._tracks_file)
         return self._tracks_data
@@ -159,10 +122,15 @@ class Recording:
 
     def get_track_ids_at_frame(self, frame: int) -> list[Track]:
         tracks_data = self._get_tracks_data()
-        track_ids = tracks_data.loc[tracks_data["frame"] == frame][
-            self._track_id_key
-        ].tolist()
-        track_ids = [int(t_id) for t_id in sorted(track_ids)]
+
+        track_ids = (
+            tracks_data.filter(pl.col("frame") == frame)
+            .select(self._track_id_key)
+            .sort(self._track_id_key)
+            .to_series()
+            .to_list()
+        )
+
         return track_ids
 
     def get_track(self, track_id: int) -> Track:
@@ -173,10 +141,10 @@ class Recording:
         tracks_data = self._get_tracks_data()
 
         if track_id not in self._tracks:
-            track_meta_data = self._tracks_meta_data.loc[
-                self._tracks_meta_data[self._track_id_key] == track_id
-            ].to_dict(orient="records")[0]
-            track_data = tracks_data.loc[tracks_data[self._track_id_key] == track_id]
+            track_meta_data = self._tracks_meta_data.filter(
+                pl.col(self._track_id_key) == track_id
+            ).to_dicts()[0]
+            track_data = tracks_data.filter(pl.col(self._track_id_key) == track_id)
             track = Track(track_id, track_meta_data, track_data)
             self._tracks[track_id] = track
 
