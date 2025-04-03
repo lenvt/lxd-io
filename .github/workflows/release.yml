@@ -19,7 +19,8 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v5
       with:
-        version: "0.6.6"
+        enable-cache: true
+        version: "0.6.12"
 
     - name: "Set up Python"
       uses: actions/setup-python@v5
