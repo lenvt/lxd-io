@@ -266,12 +266,12 @@ class Recording:
                         self._background_image_scale_factor,
                     )
 
-                    ax.plot(
-                        background_image_trajectory[:, 0],
-                        background_image_trajectory[:, 1],
-                        color="red",
-                        linewidth=2,
-                    )
+                ax.plot(
+                    background_image_trajectory[:, 0],
+                    background_image_trajectory[:, 1],
+                    color="red",
+                    linewidth=2,
+                )
 
             ax.axis("off")
             f.savefig(plot_file, bbox_inches="tight", pad_inches=0)
