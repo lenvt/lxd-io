@@ -934,7 +934,7 @@ wheels = [
 
 [[package]]
 name = "lxd-io"
-version = "0.4.6"
+version = "0.4.7"
 source = { editable = "." }
 dependencies = [
     { name = "loguru" },
@@ -965,7 +965,7 @@ dev = [
 requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "matplotlib", specifier = ">=3.7.5" },
-    { name = "numpy", specifier = ">=1.24.4" },
+    { name = "numpy", specifier = ">=1.23.4" },
     { name = "polars", specifier = ">=1.8.2" },
 ]
 
