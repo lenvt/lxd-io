@@ -120,7 +120,12 @@ class Track:
             raise KeyError(msg)
 
         if key in self.SEMICOLON_LIST_COLUMNS:
-            data = np.array(self._get_semicolon_list_df(key).to_series().to_list())
+            data = np.array(
+                self._get_semicolon_list_df(key)
+                .select(pl.col(key))
+                .to_series()
+                .to_list()
+            )
         else:
             data = self._track_data[key].to_numpy()
 
