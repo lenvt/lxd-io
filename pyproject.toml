@@ -18,7 +18,7 @@ version = "0.4.7"
 dependencies = [
     "loguru>=0.7.3",
     "matplotlib>=3.7.5",
-    "numpy>=1.24.4",
+    "numpy>=1.23.4",
     "polars>=1.8.2",
 ]
 classifiers = [
