@@ -133,6 +133,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"lxd_io/__init__.py" = ["E402"]
 "test/**/*.py" = [
     "T201",
     "S101",
